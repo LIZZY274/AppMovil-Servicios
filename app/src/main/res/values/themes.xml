@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.MyAutoTrackFinal" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#2962FF</item>  <item name="colorPrimaryVariant">#0039CB</item> <item name="colorOnPrimary">#FFFFFF</item> <item name="colorSecondary">#FF4081</item> <item name="colorSecondaryVariant">#F50057</item> <item name="colorOnSecondary">#FFFFFF</item> <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor">?attr/colorPrimary</item> <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.MyAutoTrackFinal.NoActionBar" parent="Theme.MyAutoTrackFinal" />
+</resources>
