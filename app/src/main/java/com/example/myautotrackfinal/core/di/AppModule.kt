@@ -7,6 +7,9 @@ import com.example.myautotrackfinal.core.network.RetrofitClient
 import com.example.myautotrackfinal.core.datastore.TokenManager
 import com.example.myautotrackfinal.core.di.module.HardwareModule
 import com.example.myautotrackfinal.core.hardware.domain.CameraRepository
+import com.example.myautotrackfinal.core.hardware.data.VibrationManager
+import com.example.myautotrackfinal.core.hardware.data.VibrationRepositoryImpl
+import com.example.myautotrackfinal.core.hardware.domain.VibrationRepository
 import com.example.myautotrackfinal.features.login.data.LoginRepository
 import com.example.myautotrackfinal.features.login.domain.LoginUseCase
 import com.example.myautotrackfinal.features.login.domain.repository.LoginRepositoryInterface
@@ -21,9 +24,7 @@ import com.example.myautotrackfinal.features.home.domain.HomeUseCase
 
 object AppModule {
 
-    // ===========================
-    // 🏭 CORE DEPENDENCIES
-    // ===========================
+
 
     fun provideTokenManager(context: Context): TokenManager {
         return TokenManager(context)
@@ -37,17 +38,22 @@ object AppModule {
         return RetrofitClient.createWithContext(context).create(ServiceApi::class.java)
     }
 
-    // ===========================
-    // 🔧 HARDWARE DEPENDENCIES
-    // ===========================
+
 
     fun provideCameraRepository(context: Context): CameraRepository {
         return HardwareModule.provideCameraRepository(context)
     }
 
-    // ===========================
-    // 🏪 REPOSITORIES
-    // ===========================
+
+    fun provideVibrationManager(context: Context): VibrationManager {
+        return VibrationManager(context)
+    }
+
+    fun provideVibrationRepository(context: Context): VibrationRepositoryImpl {
+        return VibrationRepositoryImpl(provideVibrationManager(context))
+    }
+
+
 
     fun provideLoginRepository(context: Context): LoginRepositoryInterface {
         val authApi = provideAuthApi(context)
@@ -68,9 +74,7 @@ object AppModule {
         return HomeRepository()
     }
 
-    // ===========================
-    // 🎯 USE CASES
-    // ===========================
+
 
     fun provideLoginUseCase(context: Context): LoginUseCase {
         val repository = provideLoginRepository(context)

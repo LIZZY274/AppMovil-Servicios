@@ -10,13 +10,14 @@ import com.example.myautotrackfinal.core.di.AppModule
 import com.example.myautotrackfinal.core.hardware.domain.CameraRepository
 import com.example.myautotrackfinal.features.service.data.model.ServiceRequest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class AddServiceViewModel(application: Application) : AndroidViewModel(application) {
 
     private val serviceUseCase = AppModule.provideServiceUseCase(application.applicationContext)
     private val cameraRepository = AppModule.provideCameraRepository(application.applicationContext)
 
-    // ✅ CORREGIDO: _ en lugar de *
     private val _addServiceSuccess = MutableLiveData<Boolean>()
     val addServiceSuccess: LiveData<Boolean> = _addServiceSuccess
 
@@ -26,34 +27,41 @@ class AddServiceViewModel(application: Application) : AndroidViewModel(applicati
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // ⭐ NUEVOS: Para manejar la cámara y la imagen
     private val _showCamera = MutableLiveData<Boolean>()
     val showCamera: LiveData<Boolean> = _showCamera
 
     private val _capturedImageUri = MutableLiveData<Uri?>()
     val capturedImageUri: LiveData<Uri?> = _capturedImageUri
 
-    // Función para obtener el repository de la cámara
     fun getCameraRepository(): CameraRepository = cameraRepository
 
-    // Mostrar la pantalla de cámara
     fun showCamera() {
         _showCamera.value = true
     }
 
-    // Ocultar la pantalla de cámara
     fun hideCamera() {
         _showCamera.value = false
     }
 
-    // Guardar la imagen capturada
     fun setImageUri(uri: Uri) {
         _capturedImageUri.value = uri
     }
 
-    // Eliminar la imagen capturada
     fun removeImage() {
         _capturedImageUri.value = null
+    }
+
+
+    private fun formatDateForServer(fecha: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val date = inputFormat.parse(fecha)
+            outputFormat.format(date ?: Date())
+        } catch (e: Exception) {
+
+            fecha
+        }
     }
 
     fun addService(tipo: String, fecha: String, costo: Double, taller: String, descripcion: String) {
@@ -61,12 +69,14 @@ class AddServiceViewModel(application: Application) : AndroidViewModel(applicati
             try {
                 _isLoading.value = true
 
-
                 val imagenUrl = _capturedImageUri.value?.toString()
+
+
+                val fechaFormateada = formatDateForServer(fecha)
 
                 val request = ServiceRequest(
                     tipo = tipo,
-                    fecha = fecha,
+                    fecha = fechaFormateada,
                     costo = costo,
                     taller = taller,
                     descripcion = descripcion,

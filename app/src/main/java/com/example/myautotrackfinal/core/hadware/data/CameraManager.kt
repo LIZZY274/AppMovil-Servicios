@@ -27,20 +27,20 @@ class CameraManager(private val context: Context) {
             try {
                 cameraProvider = cameraProviderFuture.get()
 
-                // 📸 Preview
+                // ver
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-                // 📷 Image capture
+                // tomar
                 imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
 
-                // 📱 Cámara trasera por defecto
+                //  Cámara trasera por defecto
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-                // 🔗 Bind al lifecycle
+
                 cameraProvider?.unbindAll()
                 cameraProvider?.bindToLifecycle(
                     lifecycleOwner,
@@ -63,7 +63,7 @@ class CameraManager(private val context: Context) {
     ) {
         val imageCapture = this.imageCapture ?: return
 
-        // 📂 Crear archivo para la imagen
+        //  Crear archivo para la imagen
         val photoFile = createImageFile()
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()

@@ -1,8 +1,9 @@
-// REEMPLAZA TU RegisterScreen.kt con este nuevo diseño
 package com.example.myautotrackfinal.features.register.presentation
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,10 +22,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -34,8 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myautotrackfinal.R
 import com.example.myautotrackfinal.core.navigation.Screens
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,266 +55,401 @@ fun RegisterScreen(navController: NavController, registerViewModel: RegisterView
     val errorMessage by registerViewModel.errorMessage.observeAsState()
     val isLoading by registerViewModel.isLoading.observeAsState(false)
 
-    // Observar el éxito del registro
     LaunchedEffect(registerSuccess) {
         if (registerSuccess == true) {
-            Toast.makeText(context, "Registro exitoso. Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "✅ Cuenta creada exitosamente", Toast.LENGTH_SHORT).show()
             navController.navigate(Screens.Login.route) {
                 popUpTo(Screens.Register.route) { inclusive = true }
             }
             registerViewModel.clearMessages()
         }
     }
-
-    // Observar mensajes de error
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "❌ $it", Toast.LENGTH_LONG).show()
             registerViewModel.clearMessages()
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Logo AUTOTRACK
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(bottom = 40.dp)
-        ) {
-            // Logo circular
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = "AutoTrack Logo",
-                    modifier = Modifier.size(100.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFAFAFA),
+                        Color(0xFFFFFFFF)
+                    )
                 )
-            }
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            SportsCarWithFireLogo()
+
+            Spacer(modifier = Modifier.height(36.dp))
+
+            ProfessionalRegisterField(
+                value = name,
+                onValueChange = { name = it },
+                label = "Nombre completo",
+                placeholder = "Juan Pérez",
+                icon = Icons.Default.Person,
+                keyboardType = KeyboardType.Text
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "AUTOTRACK",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp
-                ),
-                color = Color(0xFF8B0000), // Color rojo oscuro como en la imagen
-                textAlign = TextAlign.Center
-            )
-        }
-
-        // Campo NAME
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "NAME",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                placeholder = { Text("Jiara Martins", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Name Icon", tint = Color.Gray) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 20.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF8B0000),
-                    unfocusedBorderColor = Color.Gray,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-
-        // Campo EMAIL
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "EMAIL",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            OutlinedTextField(
+            ProfessionalRegisterField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("hello@reallygreasite.com", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color.Gray) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 20.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF8B0000),
-                    unfocusedBorderColor = Color.Gray,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-
-        // Campo PASSWORD
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "PASSWORD",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
+                label = "Email",
+                placeholder = "usuario@ejemplo.com",
+                icon = Icons.Default.Email,
+                keyboardType = KeyboardType.Email
             )
 
-            OutlinedTextField(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProfessionalRegisterPasswordField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("••••••", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Gray) },
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                            tint = Color.Gray
-                        )
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 20.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF8B0000),
-                    unfocusedBorderColor = Color.Gray,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-
-        // Campo CONFIRM PASSWORD
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "CONFIRM PASSWORD",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
+                label = "Contraseña",
+                placeholder = "Mínimo 6 caracteres",
+                passwordVisibility = passwordVisible,
+                onVisibilityChange = { passwordVisible = !passwordVisible }
             )
 
-            OutlinedTextField(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProfessionalRegisterPasswordField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                placeholder = { Text("••••••", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Confirm Password Icon", tint = Color.Gray) },
-                trailingIcon = {
-                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                        Icon(
-                            imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                            tint = Color.Gray
-                        )
-                    }
-                },
-                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF8B0000),
-                    unfocusedBorderColor = Color.Gray,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
+                label = "Confirmar contraseña",
+                placeholder = "Repite tu contraseña",
+                passwordVisibility = confirmPasswordVisible,
+                onVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible }
             )
-        }
 
-        // Botón REGISTER
-        Button(
-            onClick = {
-                when {
-                    name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() -> {
-                        Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show()
-                    }
-                    password != confirmPassword -> {
-                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
-                    }
-                    password.length < 6 -> {
-                        Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        registerViewModel.register(name, email, password)
+            Spacer(modifier = Modifier.height(28.dp))
+
+            ProfessionalRegisterButton(
+                isLoading = isLoading,
+                onClick = {
+                    when {
+                        name.isEmpty() -> Toast.makeText(context, "👤 Ingresa tu nombre", Toast.LENGTH_SHORT).show()
+                        email.isEmpty() -> Toast.makeText(context, "📧 Ingresa tu email", Toast.LENGTH_SHORT).show()
+                        password.isEmpty() -> Toast.makeText(context, "🔒 Ingresa una contraseña", Toast.LENGTH_SHORT).show()
+                        confirmPassword.isEmpty() -> Toast.makeText(context, "🔒 Confirma tu contraseña", Toast.LENGTH_SHORT).show()
+                        password != confirmPassword -> Toast.makeText(context, "❌ Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                        password.length < 6 -> Toast.makeText(context, "⚠️ La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                        else -> registerViewModel.register(name, email, password)
                     }
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .padding(bottom = 24.dp),
-            shape = RoundedCornerShape(28.dp), // Botón más redondeado como en la imagen
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF8B0000), // Color rojo oscuro
-                contentColor = Color.White
-            ),
-            enabled = !isLoading
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White
-                )
-            } else {
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "REGISTER",
+                    text = "¿Ya tienes cuenta? ",
+                    color = Color(0xFF6B7280),
+                    fontSize = 15.sp
+                )
+                Text(
+                    text = "Inicia sesión",
+                    color = Color(0xFFDC2626),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clickable {
+                        navController.navigate(Screens.Login.route)
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Composable
+fun SportsCarWithFireLogo() {
+    val infiniteTransition = rememberInfiniteTransition(label = "sports_car")
+
+
+    val fireOpacity by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(300),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "fire_flicker"
+    )
+
+
+    val carShake by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(100),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "car_shake"
+    )
+
+
+    val smokeScale by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "smoke_scale"
+    )
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Card(
+            modifier = Modifier
+                .size(140.dp)
+                .shadow(12.dp, CircleShape),
+            shape = CircleShape,
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFDC2626).copy(alpha = 0.1f),
+                                Color(0xFF000000).copy(alpha = 0.05f)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "💨",
+                    fontSize = (16 + smokeScale * 8).sp,
+                    modifier = Modifier
+                        .offset(x = (-20).dp, y = 5.dp)
+                        .graphicsLayer(alpha = 0.6f)
+                )
+
+                Text(
+                    text = "🏎️",
+                    fontSize = 48.sp,
+                    modifier = Modifier
+                        .offset(x = carShake.dp, y = carShake.dp)
+                )
+
+                Text(
+                    text = "🔥",
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .offset(x = (-25).dp, y = 0.dp)
+                        .graphicsLayer(alpha = fireOpacity)
+                )
+
+                Text(
+                    text = "✨",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    modifier = Modifier
+                        .offset(x = (-30).dp, y = (-10).dp)
+                        .graphicsLayer(alpha = fireOpacity * 0.8f)
                 )
             }
         }
 
-        // Texto de "¿Ya tienes una cuenta?"
-        Row(
-            modifier = Modifier.padding(top = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "CREAR CUENTA",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 3.sp,
+            color = Color(0xFFDC2626)
+        )
+    }
+}
+
+@Composable
+fun ProfessionalRegisterField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    keyboardType: KeyboardType
+) {
+    Column {
+        Text(
+            text = label.uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF374151),
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(2.dp)
         ) {
-            Text(
-                text = "¿Ya tienes una cuenta? ",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "Inicia Sesión",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color(0xFF8B0000), // Color rojo oscuro
-                modifier = Modifier.clickable {
-                    navController.navigate(Screens.Login.route)
-                }
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = {
+                    Text(
+                        text = placeholder,
+                        color = Color(0xFF9CA3AF),
+                        fontSize = 14.sp
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        icon,
+                        contentDescription = label,
+                        tint = Color(0xFFDC2626),
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFDC2626),
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = Color(0xFF111827),
+                    unfocusedTextColor = Color(0xFF111827)
+                )
             )
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(40.dp))
+@Composable
+fun ProfessionalRegisterPasswordField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    passwordVisibility: Boolean,
+    onVisibilityChange: () -> Unit
+) {
+    Column {
+        Text(
+            text = label.uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF374151),
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = {
+                    Text(
+                        text = placeholder,
+                        color = Color(0xFF9CA3AF),
+                        fontSize = 14.sp
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = "Password",
+                        tint = Color(0xFFDC2626),
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = onVisibilityChange) {
+                        Icon(
+                            if (passwordVisibility) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Toggle password visibility",
+                            tint = Color(0xFF6B7280),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFDC2626),
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = Color(0xFF111827),
+                    unfocusedTextColor = Color(0xFF111827)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfessionalRegisterButton(
+    isLoading: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .shadow(6.dp, RoundedCornerShape(14.dp)),
+        shape = RoundedCornerShape(14.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFDC2626),
+            contentColor = Color.White
+        ),
+        enabled = !isLoading
+    ) {
+        if (isLoading) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "Creando cuenta...",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        } else {
+            Text(
+                text = "CREAR CUENTA",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+        }
     }
 }

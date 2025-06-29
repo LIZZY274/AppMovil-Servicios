@@ -3,6 +3,7 @@ package com.example.myautotrackfinal.features.service.presentation
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +12,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +29,14 @@ import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+
+
+object UpdateRedTheme {
+    val Primary = Color(0xFFB91C1C)
+    val Light = Color(0xFFFEF2F2)
+    val Medium = Color(0xFFFECACA)
+    val Dark = Color(0xFF991B1B)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,38 +49,50 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
     var taller by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
 
-    // ✅ CORREGIDO: Usar los nombres correctos del ViewModel
+    // Variables para rastrear los valores originales
+    var originalTipo by remember { mutableStateOf("") }
+    var originalFecha by remember { mutableStateOf("") }
+    var originalCosto by remember { mutableStateOf("") }
+    var originalTaller by remember { mutableStateOf("") }
+    var originalDescripcion by remember { mutableStateOf("") }
+
     val serviceDetails by updateServiceViewModel.service.observeAsState()
     val updateServiceSuccess by updateServiceViewModel.updateSuccess.observeAsState()
     val errorMessage by updateServiceViewModel.errorMessage.observeAsState()
     val isLoading by updateServiceViewModel.isLoading.observeAsState(false)
 
-    // Cargar detalles del servicio cuando la pantalla se compone o el serviceId cambia
+
     LaunchedEffect(serviceId) {
-        updateServiceViewModel.loadService(serviceId) // ✅ CORREGIDO: Método correcto
+        updateServiceViewModel.loadService(serviceId)
     }
 
-    // Actualizar los campos de texto cuando los detalles del servicio son cargados
+
     LaunchedEffect(serviceDetails) {
-        serviceDetails?.let { service -> // ✅ CORREGIDO: Dar nombre a la variable
+        serviceDetails?.let { service ->
             tipo = service.tipo
             fecha = service.fecha
             costo = service.costo.toString()
             taller = service.taller
-            descripcion = service.descripcion ?: "" // ✅ CORRECCIÓN: Manejar el null con operador Elvis
+            descripcion = service.descripcion ?: ""
+
+
+            originalTipo = service.tipo
+            originalFecha = service.fecha
+            originalCosto = service.costo.toString()
+            originalTaller = service.taller
+            originalDescripcion = service.descripcion ?: ""
         }
     }
 
-    // Observar el éxito de la actualización
+
     LaunchedEffect(updateServiceSuccess) {
         if (updateServiceSuccess == true) {
-            Toast.makeText(context, "Servicio actualizado exitosamente", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "✅ Servicio actualizado exitosamente", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
             updateServiceViewModel.clearMessages()
         }
     }
 
-    // Observar mensajes de error
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -79,25 +103,44 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Modificar Servicio", color = Color.White) },
+                title = {
+                    Text(
+                        "✏️ Modificar Servicio",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = UpdateRedTheme.Primary)
             )
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().background(Color(0xFFF8FAFC))
     ) { paddingValues ->
 
         if (serviceDetails == null && isLoading) {
-            // Mostrar loading mientras se cargan los datos
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = androidx.compose.ui.Alignment.Center
+                contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = UpdateRedTheme.Primary,
+                        strokeWidth = 3.dp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Cargando datos del servicio...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
             }
         } else {
             Column(
@@ -107,6 +150,53 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = UpdateRedTheme.Light
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    UpdateRedTheme.Primary.copy(alpha = 0.2f),
+                                    RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = UpdateRedTheme.Primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Text(
+                            text = "Modifica los campos que necesites cambiar",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 20.sp
+                            ),
+                            color = UpdateRedTheme.Primary
+                        )
+                    }
+                }
+
                 OutlinedTextField(
                     value = tipo,
                     onValueChange = { tipo = it },
@@ -114,7 +204,11 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = UpdateRedTheme.Primary,
+                        focusedLabelColor = UpdateRedTheme.Primary
+                    )
                 )
 
                 val calendar = Calendar.getInstance()
@@ -135,15 +229,23 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
                 OutlinedTextField(
                     value = fecha,
                     onValueChange = { fecha = it },
-                    label = { Text("Fecha (YYYY-MM-DD)") },
+                    label = { Text("Fecha") },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { datePickerDialog.show() }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                            Icon(
+                                Icons.Default.DateRange,
+                                contentDescription = "Seleccionar fecha",
+                                tint = UpdateRedTheme.Primary
+                            )
                         }
                     },
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = UpdateRedTheme.Primary,
+                        focusedLabelColor = UpdateRedTheme.Primary
+                    )
                 )
 
                 OutlinedTextField(
@@ -153,11 +255,15 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
                             costo = newValue
                         }
                     },
-                    label = { Text("Costo") },
+                    label = { Text("Costo ($)") },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = UpdateRedTheme.Primary,
+                        focusedLabelColor = UpdateRedTheme.Primary
+                    )
                 )
 
                 OutlinedTextField(
@@ -167,34 +273,80 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = UpdateRedTheme.Primary,
+                        focusedLabelColor = UpdateRedTheme.Primary
+                    )
                 )
 
                 OutlinedTextField(
                     value = descripcion,
                     onValueChange = { descripcion = it },
                     label = { Text("Descripción") },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).padding(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).padding(bottom = 24.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = UpdateRedTheme.Primary,
+                        focusedLabelColor = UpdateRedTheme.Primary
+                    )
                 )
+
+
+                fun hasChanges(): Boolean {
+                    return tipo != originalTipo ||
+                            fecha != originalFecha ||
+                            costo != originalCosto ||
+                            taller != originalTaller ||
+                            descripcion != originalDescripcion
+                }
+
+
+                fun hasValidChanges(): Boolean {
+                    if (!hasChanges()) return false
+
+
+                    if (tipo != originalTipo && tipo.trim().isEmpty()) return false
+                    if (costo != originalCosto && costo.isNotEmpty() && costo.toDoubleOrNull() == null) return false
+
+                    return true
+                }
 
                 Button(
                     onClick = {
-                        val costoDouble = costo.toDoubleOrNull()
-                        if (tipo.isNotEmpty() && fecha.isNotEmpty() && costoDouble != null && taller.isNotEmpty()) {
-                            updateServiceViewModel.updateService(serviceId, tipo, fecha, costoDouble, taller, descripcion)
-                        } else {
-                            Toast.makeText(context, "Por favor, completa todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+                        if (!hasChanges()) {
+                            Toast.makeText(context, "No se han realizado cambios", Toast.LENGTH_SHORT).show()
+                            return@Button
                         }
+
+                        if (!hasValidChanges()) {
+                            Toast.makeText(context, "Los campos modificados deben tener valores válidos", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        val costoDouble = if (costo.isNotEmpty()) costo.toDoubleOrNull() ?: originalCosto.toDouble() else originalCosto.toDouble()
+                        updateServiceViewModel.updateService(
+                            serviceId = serviceId,
+                            newTipo = tipo,
+                            newFecha = fecha,
+                            newCosto = costoDouble,
+                            newTaller = taller,
+                            newDescripcion = descripcion
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
-                        .padding(top = 16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    enabled = !isLoading
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (hasValidChanges()) {
+                            UpdateRedTheme.Primary
+                        } else {
+                            UpdateRedTheme.Primary.copy(alpha = 0.6f)
+                        }
+                    ),
+                    enabled = !isLoading && hasValidChanges()
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
@@ -202,8 +354,77 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
                             color = Color.White
                         )
                     } else {
-                        Text(text = "Actualizar Servicio", fontSize = 18.sp, color = Color.White)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (hasValidChanges()) "Actualizar Servicio" else "Sin Cambios",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
+                }
+
+                if (hasValidChanges()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = UpdateRedTheme.Light
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "✅ Cambios detectados - Presiona el botón para guardar",
+                            modifier = Modifier.padding(16.dp),
+                            color = UpdateRedTheme.Primary,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                } else if (hasChanges()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ Los campos modificados necesitan valores válidos",
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF8FAFC)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "💡 Solo necesitas cambiar los campos que quieras actualizar",
+                        modifier = Modifier.padding(16.dp),
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }

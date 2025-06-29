@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -25,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,16 +54,16 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
     val showCamera by addServiceViewModel.showCamera.observeAsState(false)
     val capturedImageUri by addServiceViewModel.capturedImageUri.observeAsState()
 
-    // Observar el éxito de agregar servicio
+
     LaunchedEffect(addServiceSuccess) {
         if (addServiceSuccess == true) {
-            Toast.makeText(context, "Servicio agregado exitosamente", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "✅ Servicio agregado exitosamente", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
             addServiceViewModel.clearMessages()
         }
     }
 
-    // Observar mensajes de error
+
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -69,7 +71,7 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
         }
     }
 
-    // ⭐ MOSTRAR PANTALLA DE CÁMARA
+
     if (showCamera == true) {
         CameraScreen(
             onPhotoCaptured = { uri ->
@@ -88,16 +90,16 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agregar Nuevo Servicio", color = Color.White) },
+                title = { Text("➕ Agregar Nuevo Servicio", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFE53E3E))
             )
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().background(Color(0xFFF8FAFC))
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -106,14 +108,65 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFE53E3E).copy(alpha = 0.1f)
+                ),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                Color(0xFFE53E3E).copy(alpha = 0.2f),
+                                RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            tint = Color(0xFFE53E3E),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        text = "Completa la información para crear un nuevo servicio",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 20.sp
+                        ),
+                        color = Color(0xFFE53E3E)
+                    )
+                }
+            }
+
             OutlinedTextField(
                 value = tipo,
                 onValueChange = { tipo = it },
-                label = { Text("Tipo de Servicio") },
+                label = { Text("Tipo de Servicio *") },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE53E3E),
+                    focusedLabelColor = Color(0xFFE53E3E)
+                )
             )
 
             val calendar = Calendar.getInstance()
@@ -134,7 +187,7 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
             OutlinedTextField(
                 value = fecha,
                 onValueChange = { fecha = it },
-                label = { Text("Fecha (YYYY-MM-DD)") },
+                label = { Text("Fecha (YYYY-MM-DD) *") },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 readOnly = true,
                 trailingIcon = {
@@ -142,7 +195,11 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                         Icon(Icons.Default.DateRange, contentDescription = "Select Date")
                     }
                 },
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE53E3E),
+                    focusedLabelColor = Color(0xFFE53E3E)
+                )
             )
 
             OutlinedTextField(
@@ -152,21 +209,29 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                         costo = newValue
                     }
                 },
-                label = { Text("Costo") },
+                label = { Text("Costo *") },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE53E3E),
+                    focusedLabelColor = Color(0xFFE53E3E)
+                )
             )
 
             OutlinedTextField(
                 value = taller,
                 onValueChange = { taller = it },
-                label = { Text("Taller") },
+                label = { Text("Taller *") },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE53E3E),
+                    focusedLabelColor = Color(0xFFE53E3E)
+                )
             )
 
             OutlinedTextField(
@@ -175,10 +240,14 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                 label = { Text("Descripción (Opcional)") },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).padding(bottom = 16.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE53E3E),
+                    focusedLabelColor = Color(0xFFE53E3E)
+                )
             )
 
-            // ⭐ SECCIÓN DE CÁMARA
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -190,13 +259,12 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "📸 Foto del Vehículo",
+                        text = "📸 Foto del Vehículo (Opcional)",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
                     if (capturedImageUri != null) {
-                        // ✅ MOSTRAR IMAGEN CAPTURADA
                         Box(
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -210,7 +278,6 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                                 contentScale = ContentScale.Crop
                             )
 
-                            // Botón para eliminar imagen
                             IconButton(
                                 onClick = { addServiceViewModel.removeImage() },
                                 modifier = Modifier
@@ -230,7 +297,6 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Botón para tomar nueva foto
                         OutlinedButton(
                             onClick = { addServiceViewModel.showCamera() },
                             modifier = Modifier.fillMaxWidth()
@@ -240,38 +306,37 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                             Text("Tomar nueva foto")
                         }
                     } else {
-                        // ⭐ BOTÓN PARA TOMAR FOTO
                         Button(
                             onClick = { addServiceViewModel.showCamera() },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
+                                containerColor = Color(0xFFE53E3E)
                             )
                         ) {
                             Icon(Icons.Default.PhotoCamera, contentDescription = "Cámara")
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("")
+                            Text("Tomar foto")
                         }
                     }
                 }
             }
 
-            // ⭐ BOTÓN AGREGAR SERVICIO
+
             Button(
                 onClick = {
                     val costoDouble = costo.toDoubleOrNull()
                     if (tipo.isNotEmpty() && fecha.isNotEmpty() && costoDouble != null && taller.isNotEmpty()) {
                         addServiceViewModel.addService(tipo, fecha, costoDouble, taller, descripcion)
                     } else {
-                        Toast.makeText(context, "Por favor, completa todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "⚠️ Por favor, completa todos los campos obligatorios (*)", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(56.dp)
                     .padding(top = 16.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53E3E)),
                 enabled = !isLoading
             ) {
                 if (isLoading) {
@@ -280,11 +345,11 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                         color = Color.White
                     )
                 } else {
-                    Text(text = "Agregar Servicio", fontSize = 18.sp, color = Color.White)
+                    Text(text = "➕ Agregar Servicio", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
 
-            // ⭐ MOSTRAR ESTADO DE LA IMAGEN
+            // MOSTRAR ESTADO DE LA IMAGEN
             if (capturedImageUri != null) {
                 Card(
                     modifier = Modifier
@@ -298,6 +363,23 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                         color = Color.Green.copy(alpha = 0.8f)
                     )
                 }
+            }
+
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                )
+            ) {
+                Text(
+                    text = "ℹ️ Los campos marcados con (*) son obligatorios",
+                    modifier = Modifier.padding(12.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }

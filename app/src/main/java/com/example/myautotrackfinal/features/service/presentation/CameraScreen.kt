@@ -99,7 +99,7 @@ fun CameraScreen(
                 )
             }
 
-            // 📸 Botón de captura
+
             FloatingActionButton(
                 onClick = {
                     if (isCameraInitialized) {

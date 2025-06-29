@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Tu IP real de WiFi
+
     private val BASE_URL = "http://192.168.1.102:3000"
 
     fun createWithContext(context: Context): Retrofit {

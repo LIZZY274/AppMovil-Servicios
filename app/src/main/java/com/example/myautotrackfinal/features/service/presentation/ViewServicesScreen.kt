@@ -3,6 +3,8 @@ package com.example.myautotrackfinal.features.service.presentation
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,27 +15,50 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myautotrackfinal.core.navigation.Screens
 import com.example.myautotrackfinal.features.service.data.model.Service
 
+
+object RedTheme {
+    val Primary = Color(0xFFDC2626)      // Rojo principal
+    val Secondary = Color(0xFFEF4444)    // Rojo secundario
+    val Light = Color(0xFFFEF2F2)        // Rojo muy claro
+    val Medium = Color(0xFFFECACA)       // Rojo medio claro
+    val Dark = Color(0xFF991B1B)         // Rojo oscuro
+    val Accent = Color(0xFFB91C1C)       // Rojo acento (para modificar)
+    val DeepRed = Color(0xFF7F1D1D)      // Rojo profundo (para eliminar)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewServicesScreen(navController: NavController, viewServicesViewModel: ViewServicesViewModel = viewModel()) {
+fun ViewServicesScreen(
+    navController: NavController,
+    viewMode: ServiceViewMode = ServiceViewMode.VIEW_ONLY,
+    viewServicesViewModel: ViewServicesViewModel = viewModel()
+) {
     val context = LocalContext.current
     val services by viewServicesViewModel.services.observeAsState(emptyList())
     val errorMessage by viewServicesViewModel.errorMessage.observeAsState()
@@ -43,7 +68,18 @@ fun ViewServicesScreen(navController: NavController, viewServicesViewModel: View
     var showDeleteDialog by remember { mutableStateOf(false) }
     var serviceToDelete by remember { mutableStateOf<Service?>(null) }
 
-    // Observar mensajes de error
+
+    var showImageDialog by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<String?>(null) }
+
+
+    val themeColors = when (viewMode) {
+        ServiceViewMode.VIEW_ONLY -> Pair(RedTheme.Primary, "Ver Servicios")
+        ServiceViewMode.EDIT_ONLY -> Pair(RedTheme.Accent, "Modificar Servicio")
+        ServiceViewMode.DELETE_ONLY -> Pair(RedTheme.DeepRed, "Eliminar Servicio")
+    }
+
+
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -62,7 +98,14 @@ fun ViewServicesScreen(navController: NavController, viewServicesViewModel: View
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ver Servicios", color = Color.White) },
+                title = {
+                    Text(
+                        themeColors.second,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
@@ -73,91 +116,103 @@ fun ViewServicesScreen(navController: NavController, viewServicesViewModel: View
                         Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = themeColors.first)
             )
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().background(Color(0xFFF8FAFC))
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Header informativo mejorado
+            item {
+                ProfessionalInfoCard(viewMode)
+            }
+
             if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                color = themeColors.first,
+                                strokeWidth = 3.dp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "Cargando servicios...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
+                        }
+                    }
                 }
             }
 
             if (services.isEmpty() && !isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "No hay servicios registrados",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Agrega tu primer servicio desde el menú principal",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
+                item {
+                    EmptyStateCard()
                 }
             } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(services) { service ->
-                        ServiceCardWithPhoto(
-                            service = service,
-                            onEdit = {
-                                navController.navigate(Screens.UpdateService.createRoute(service.id.toString()))
-                            },
-                            onDelete = {
-                                serviceToDelete = service
-                                showDeleteDialog = true
-                            }
-                        )
-                    }
+                items(services) { service ->
+                    ProfessionalServiceCard(
+                        service = service,
+                        viewMode = viewMode,
+                        onEdit = {
+                            navController.navigate(Screens.UpdateService.createRoute(service.id.toString()))
+                        },
+                        onDelete = {
+                            serviceToDelete = service
+                            showDeleteDialog = true
+                        },
+                        onImageClick = { imageUri ->
+                            selectedImageUri = imageUri
+                            showImageDialog = true
+                        }
+                    )
                 }
+            }
+
+
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
 
-        // Dialog de confirmación para eliminar
-        if (showDeleteDialog && serviceToDelete != null) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Confirmar eliminación") },
-                text = { Text("¿Estás seguro de que quieres eliminar el servicio \"${serviceToDelete?.tipo}\"?") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            serviceToDelete?.let {
-                                viewServicesViewModel.deleteService(it.id.toString())
-                            }
-                            showDeleteDialog = false
-                            serviceToDelete = null
-                        }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+        if (showDeleteDialog && serviceToDelete != null && viewMode == ServiceViewMode.DELETE_ONLY) {
+            ProfessionalDeleteDialog(
+                service = serviceToDelete!!,
+                onConfirm = {
+                    serviceToDelete?.let {
+                        viewServicesViewModel.deleteService(it.id.toString())
                     }
+                    showDeleteDialog = false
+                    serviceToDelete = null
                 },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) {
-                        Text("Cancelar")
-                    }
+                onDismiss = {
+                    showDeleteDialog = false
+                    serviceToDelete = null
+                }
+            )
+        }
+
+
+        if (showImageDialog && selectedImageUri != null) {
+            FullScreenImageDialog(
+                imageUri = selectedImageUri!!,
+                onDismiss = {
+                    showImageDialog = false
+                    selectedImageUri = null
                 }
             )
         }
@@ -165,167 +220,572 @@ fun ViewServicesScreen(navController: NavController, viewServicesViewModel: View
 }
 
 @Composable
-fun ServiceCardWithPhoto(
+fun ProfessionalInfoCard(viewMode: ServiceViewMode) {
+    val cardInfo = when (viewMode) {
+        ServiceViewMode.VIEW_ONLY -> Triple(
+            Icons.Default.Visibility,
+            "Solo visualización - Aquí puedes ver todos tus servicios registrados",
+            Pair(RedTheme.Light, RedTheme.Dark)
+        )
+        ServiceViewMode.EDIT_ONLY -> Triple(
+            Icons.Default.Edit,
+            "Modo modificación - Selecciona el servicio que deseas editar",
+            Pair(RedTheme.Light, RedTheme.Accent) // Cambiado a colores rojos
+        )
+        ServiceViewMode.DELETE_ONLY -> Triple(
+            Icons.Default.Delete,
+            "Modo eliminación - Selecciona el servicio que deseas eliminar",
+            Pair(RedTheme.Light, RedTheme.DeepRed) // Usando el nuevo color rojo profundo
+        )
+    }
+
+    val icon = cardInfo.first
+    val message = cardInfo.second
+    val bgColor = cardInfo.third.first
+    val textColor = cardInfo.third.second
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        textColor.copy(alpha = 0.2f),
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = textColor,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 20.sp
+                ),
+                color = textColor
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfessionalServiceCard(
     service: Service,
+    viewMode: ServiceViewMode,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onImageClick: (String) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-           
-            if (!service.imagenUrl.isNullOrEmpty()) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(bottom = 12.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    elevation = CardDefaults.cardElevation(2.dp)
+        Column {
+            // Header con gradiente
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(RedTheme.Primary, RedTheme.Secondary)
+                        )
+                    )
+                    .padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box {
-                        Image(
-                            painter = rememberAsyncImagePainter(Uri.parse(service.imagenUrl)),
-                            contentDescription = "Foto del vehículo",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = service.tipo,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color.White,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
 
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                        Card(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
-                            )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.PhotoCamera,
-                                    contentDescription = "Con foto",
-                                    modifier = Modifier.size(12.dp),
-                                    tint = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Foto",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White
-                                )
-                            }
+                            Icon(
+                                Icons.Default.CalendarToday,
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.9f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = service.fecha,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
                         }
+                    }
+
+
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                Color.White.copy(alpha = 0.2f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "$${String.format("%.2f", service.costo)}",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            ),
+                            color = Color.White
+                        )
                     }
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = service.tipo,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+
+            if (!service.imagenUrl.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clickable {
+                            onImageClick(service.imagenUrl)
+                        }
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(Uri.parse(service.imagenUrl)),
+                        contentDescription = "Foto del vehículo - Toca para ver en pantalla completa",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
-                    Text(
-                        text = "📅 Fecha: ${service.fecha}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                    Text(
-                        text = "🔧 Taller: ${service.taller}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                    if (!service.descripcion.isNullOrEmpty()) {
-                        Text(
-                            text = "📝 ${service.descripcion}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
 
 
-                    if (!service.imagenUrl.isNullOrEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp)
+                            .background(
+                                Color.Black.copy(alpha = 0.7f),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
                         Row(
-                            modifier = Modifier.padding(top = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 Icons.Default.PhotoCamera,
-                                contentDescription = "Con foto",
-                                modifier = Modifier.size(14.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Incluye foto del vehículo",
+                                "Toca para ver",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
+                                color = Color.White
+                            )
+                        }
+                    }
+
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White.copy(alpha = 0.0f)) // Invisible pero clickeable
+                    )
+                }
+            }
+
+            // Contenido del servicio
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                RedTheme.Light,
+                                RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Build,
+                            contentDescription = null,
+                            tint = RedTheme.Primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            "Taller",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.Gray
+                        )
+                        Text(
+                            service.taller,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = Color.Black
+                        )
+                    }
+                }
+
+                // Descripción si existe
+                if (!service.descripcion.isNullOrEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFF8FAFC)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = service.descripcion,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                lineHeight = 20.sp
+                            ),
+                            color = Color.Gray.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+
+                // Botones de acción según el modo
+                when (viewMode) {
+                    ServiceViewMode.VIEW_ONLY -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    RedTheme.Light,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Visibility,
+                                    contentDescription = null,
+                                    tint = RedTheme.Primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Solo visualización",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = RedTheme.Primary
+                                )
+                            }
+                        }
+                    }
+                    ServiceViewMode.EDIT_ONLY -> {
+                        Button(
+                            onClick = onEdit,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = RedTheme.Accent // Cambiado a rojo
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Modificar Servicio",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
+                    }
+                    ServiceViewMode.DELETE_ONLY -> {
+                        Button(
+                            onClick = onDelete,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = RedTheme.DeepRed // Usando rojo profundo para eliminar
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Eliminar Servicio",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             )
                         }
                     }
                 }
+            }
+        }
+    }
+}
 
-                Text(
-                    text = "$${String.format("%.2f", service.costo)}",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
+@Composable
+fun EmptyStateCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(
+                        RedTheme.Light,
+                        RoundedCornerShape(20.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Build,
+                    contentDescription = null,
+                    tint = RedTheme.Primary,
+                    modifier = Modifier.size(40.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+            Text(
+                text = "No hay servicios registrados",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Agrega tu primer servicio desde el menú principal",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfessionalDeleteDialog(
+    service: Service,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(
+                        Color(0xFFFEF2F2),
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                TextButton(
-                    onClick = onEdit,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = Color(0xFFDC2626),
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        },
+        title = {
+            Text(
+                "Confirmar eliminación",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black
+            )
+        },
+        text = {
+            Text(
+                "¿Estás seguro de que quieres eliminar el servicio \"${service.tipo}\"?\n\nEsta acción no se puede deshacer.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    lineHeight = 20.sp
+                ),
+                color = Color.Gray
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFDC2626)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    "Eliminar",
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = Color.Gray
+                )
+            ) {
+                Text(
+                    "Cancelar",
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        shape = RoundedCornerShape(20.dp),
+        containerColor = Color.White
+    )
+}
+
+//  Componente para ver imagen en pantalla completa
+@Composable
+fun FullScreenImageDialog(
+    imageUri: String,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.9f))
+                .clickable { onDismiss() },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                    Text(
+                        text = "Foto del Vehículo",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = Color.White
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Editar")
+
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .background(
+                                Color.White.copy(alpha = 0.2f),
+                                RoundedCornerShape(50)
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Cerrar",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
 
-                TextButton(
-                    onClick = onDelete,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                    Image(
+                        painter = rememberAsyncImagePainter(Uri.parse(imageUri)),
+                        contentDescription = "Foto del vehículo en pantalla completa",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 500.dp),
+                        contentScale = ContentScale.Fit
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Eliminar")
                 }
+
+                Text(
+                    text = "Toca en cualquier lugar para cerrar",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
     }

@@ -9,11 +9,12 @@ import com.example.myautotrackfinal.core.di.AppModule
 import com.example.myautotrackfinal.features.service.data.model.Service
 import com.example.myautotrackfinal.features.service.data.model.ServiceRequest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class UpdateServiceViewModel(application: Application) : AndroidViewModel(application) {
 
     private val serviceUseCase = AppModule.provideServiceUseCase(application.applicationContext)
-
 
     private val _service = MutableLiveData<Service>()
     val service: LiveData<Service> = _service
@@ -26,6 +27,25 @@ class UpdateServiceViewModel(application: Application) : AndroidViewModel(applic
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
+
+
+    private fun formatDateForServer(fecha: String): String {
+        return try {
+
+            if (fecha.contains("-") && fecha.length == 10) {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val date = inputFormat.parse(fecha)
+                outputFormat.format(date ?: Date())
+            } else {
+
+                fecha
+            }
+        } catch (e: Exception) {
+
+            fecha
+        }
+    }
 
     fun loadService(serviceId: String) {
         viewModelScope.launch {
@@ -49,12 +69,35 @@ class UpdateServiceViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    fun updateService(serviceId: String, tipo: String, fecha: String, costo: Double, taller: String, descripcion: String?) {
+    fun updateService(
+        serviceId: String,
+        newTipo: String,
+        newFecha: String,
+        newCosto: Double,
+        newTaller: String,
+        newDescripcion: String?
+    ) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
 
-                val request = ServiceRequest(tipo, fecha, costo, taller, descripcion)
+                val currentService = _service.value
+
+                if (currentService == null) {
+                    _errorMessage.value = "Error: No se pudo cargar el servicio original"
+                    return@launch
+                }
+
+                val fechaFormateada = formatDateForServer(newFecha)
+
+                val request = ServiceRequest(
+                    tipo = if (newTipo.isNotEmpty()) newTipo else currentService.tipo,
+                    fecha = fechaFormateada,
+                    costo = if (newCosto > 0) newCosto else currentService.costo,
+                    taller = if (newTaller.isNotEmpty()) newTaller else currentService.taller,
+                    descripcion = newDescripcion ?: currentService.descripcion,
+                    imagenUrl = currentService.imagenUrl
+                )
 
                 val response = serviceUseCase.updateService(serviceId, request)
 
