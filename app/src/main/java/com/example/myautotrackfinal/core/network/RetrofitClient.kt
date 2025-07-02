@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private val BASE_URL = "http://192.168.1.102:3000"
+    private val BASE_URL = "http://54.90.65.0:3000"
 
     fun createWithContext(context: Context): Retrofit {
         val tokenManager = TokenManager(context)

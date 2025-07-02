@@ -87,7 +87,7 @@ fun ViewServicesScreen(
         }
     }
 
-    // Observar éxito de eliminación
+
     LaunchedEffect(deleteSuccess) {
         if (deleteSuccess == true) {
             Toast.makeText(context, "Servicio eliminado exitosamente", Toast.LENGTH_SHORT).show()
@@ -128,7 +128,7 @@ fun ViewServicesScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header informativo mejorado
+
             item {
                 ProfessionalInfoCard(viewMode)
             }
@@ -230,12 +230,12 @@ fun ProfessionalInfoCard(viewMode: ServiceViewMode) {
         ServiceViewMode.EDIT_ONLY -> Triple(
             Icons.Default.Edit,
             "Modo modificación - Selecciona el servicio que deseas editar",
-            Pair(RedTheme.Light, RedTheme.Accent) // Cambiado a colores rojos
+            Pair(RedTheme.Light, RedTheme.Accent)
         )
         ServiceViewMode.DELETE_ONLY -> Triple(
             Icons.Default.Delete,
             "Modo eliminación - Selecciona el servicio que deseas eliminar",
-            Pair(RedTheme.Light, RedTheme.DeepRed) // Usando el nuevo color rojo profundo
+            Pair(RedTheme.Light, RedTheme.DeepRed)
         )
     }
 
@@ -302,7 +302,7 @@ fun ProfessionalServiceCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column {
-            // Header con gradiente
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -420,12 +420,12 @@ fun ProfessionalServiceCard(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White.copy(alpha = 0.0f)) // Invisible pero clickeable
+                            .background(Color.White.copy(alpha = 0.0f))
                     )
                 }
             }
 
-            // Contenido del servicio
+
             Column(
                 modifier = Modifier.padding(20.dp)
             ) {
@@ -469,7 +469,7 @@ fun ProfessionalServiceCard(
                     }
                 }
 
-                // Descripción si existe
+
                 if (!service.descripcion.isNullOrEmpty()) {
                     Card(
                         modifier = Modifier
@@ -491,7 +491,7 @@ fun ProfessionalServiceCard(
                     }
                 }
 
-                // Botones de acción según el modo
+
                 when (viewMode) {
                     ServiceViewMode.VIEW_ONLY -> {
                         Box(
@@ -529,7 +529,7 @@ fun ProfessionalServiceCard(
                             onClick = onEdit,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = RedTheme.Accent // Cambiado a rojo
+                                containerColor = RedTheme.Accent
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -552,7 +552,7 @@ fun ProfessionalServiceCard(
                             onClick = onDelete,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = RedTheme.DeepRed // Usando rojo profundo para eliminar
+                                containerColor = RedTheme.DeepRed
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -705,7 +705,7 @@ fun ProfessionalDeleteDialog(
     )
 }
 
-//  Componente para ver imagen en pantalla completa
+
 @Composable
 fun FullScreenImageDialog(
     imageUri: String,

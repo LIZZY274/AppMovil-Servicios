@@ -34,7 +34,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful) {
                     val token = response.body()?.token
                     if (token != null) {
-                        tokenManager.saveToken(token)
+                        tokenManager.saveToken(token) //gr
                         _loginSuccess.value = true
                     } else {
                         _errorMessage.value = "Token no recibido."

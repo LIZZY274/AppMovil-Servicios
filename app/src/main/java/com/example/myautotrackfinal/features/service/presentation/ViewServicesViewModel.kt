@@ -11,12 +11,9 @@ import kotlinx.coroutines.launch
 
 class ViewServicesViewModel(application: Application) : AndroidViewModel(application) {
 
-    // ✅ CORREGIDO: Pasar context al serviceUseCase
     private val serviceUseCase = AppModule.provideServiceUseCase(application.applicationContext)
-    // ✅ NUEVO: Agregar VibrationRepository
     private val vibrationRepository = AppModule.provideVibrationRepository(application.applicationContext)
 
-    // ✅ CORREGIDO: Cambiar * por _
     private val _services = MutableLiveData<List<Service>>()
     val services: LiveData<List<Service>> = _services
 
@@ -64,22 +61,15 @@ class ViewServicesViewModel(application: Application) : AndroidViewModel(applica
 
                 if (response.isSuccessful) {
                     _deleteSuccess.value = true
-
-                    // ✅ NUEVO: Vibrar cuando se elimina exitosamente un servicio
                     vibrationRepository.vibrateServiceDeleted()
-
-                    loadServices() // Recargar la lista después de eliminar
+                    loadServices()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al eliminar servicio: $errorBody"
-
-                    // ✅ NUEVO: Vibración de error si falla la eliminación
                     vibrationRepository.vibrateError()
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error de conexión: ${e.message}"
-
-                // ✅ NUEVO: Vibración de error en caso de excepción
                 vibrationRepository.vibrateError()
             } finally {
                 _isLoading.value = false

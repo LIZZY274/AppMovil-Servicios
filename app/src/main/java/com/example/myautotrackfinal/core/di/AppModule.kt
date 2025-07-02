@@ -9,7 +9,6 @@ import com.example.myautotrackfinal.core.di.module.HardwareModule
 import com.example.myautotrackfinal.core.hardware.domain.CameraRepository
 import com.example.myautotrackfinal.core.hardware.data.VibrationManager
 import com.example.myautotrackfinal.core.hardware.data.VibrationRepositoryImpl
-import com.example.myautotrackfinal.core.hardware.domain.VibrationRepository
 import com.example.myautotrackfinal.features.login.data.LoginRepository
 import com.example.myautotrackfinal.features.login.domain.LoginUseCase
 import com.example.myautotrackfinal.features.login.domain.repository.LoginRepositoryInterface
@@ -19,13 +18,10 @@ import com.example.myautotrackfinal.features.register.domain.repository.Register
 import com.example.myautotrackfinal.features.service.data.ServiceRepository
 import com.example.myautotrackfinal.features.service.domain.ServiceUseCase
 import com.example.myautotrackfinal.features.service.domain.repository.ServiceRepositoryInterface
-import com.example.myautotrackfinal.features.home.data.HomeRepository
-import com.example.myautotrackfinal.features.home.domain.HomeUseCase
 
 object AppModule {
 
-
-
+    // Core Dependencies
     fun provideTokenManager(context: Context): TokenManager {
         return TokenManager(context)
     }
@@ -38,12 +34,10 @@ object AppModule {
         return RetrofitClient.createWithContext(context).create(ServiceApi::class.java)
     }
 
-
-
+    // Hardware Dependencies
     fun provideCameraRepository(context: Context): CameraRepository {
         return HardwareModule.provideCameraRepository(context)
     }
-
 
     fun provideVibrationManager(context: Context): VibrationManager {
         return VibrationManager(context)
@@ -53,46 +47,29 @@ object AppModule {
         return VibrationRepositoryImpl(provideVibrationManager(context))
     }
 
-
-
+    // Repositories
     fun provideLoginRepository(context: Context): LoginRepositoryInterface {
-        val authApi = provideAuthApi(context)
-        return LoginRepository(authApi)
+        return LoginRepository(provideAuthApi(context))
     }
 
     fun provideRegisterRepository(context: Context): RegisterRepositoryInterface {
-        val authApi = provideAuthApi(context)
-        return RegisterRepository(authApi)
+        return RegisterRepository(provideAuthApi(context))
     }
 
     fun provideServiceRepository(context: Context): ServiceRepositoryInterface {
-        val serviceApi = provideServiceApi(context)
-        return ServiceRepository(serviceApi)
+        return ServiceRepository(provideServiceApi(context))
     }
 
-    fun provideHomeRepository(): HomeRepository {
-        return HomeRepository()
-    }
-
-
-
+    // Use Cases
     fun provideLoginUseCase(context: Context): LoginUseCase {
-        val repository = provideLoginRepository(context)
-        return LoginUseCase(repository)
+        return LoginUseCase(provideLoginRepository(context))
     }
 
     fun provideRegisterUseCase(context: Context): RegisterUseCase {
-        val repository = provideRegisterRepository(context)
-        return RegisterUseCase(repository)
+        return RegisterUseCase(provideRegisterRepository(context))
     }
 
     fun provideServiceUseCase(context: Context): ServiceUseCase {
-        val repository = provideServiceRepository(context)
-        return ServiceUseCase(repository)
-    }
-
-    fun provideHomeUseCase(): HomeUseCase {
-        val repository = provideHomeRepository()
-        return HomeUseCase(repository)
+        return ServiceUseCase(provideServiceRepository(context))
     }
 }

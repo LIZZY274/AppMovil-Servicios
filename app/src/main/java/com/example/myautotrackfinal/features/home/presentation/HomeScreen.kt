@@ -11,6 +11,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -77,17 +80,14 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🎭 EMOJI ANIMADO - Se mueve suavemente
         RedAnimatedGreetingCard()
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Estadísticas con números dinámicos
         RedQuickStatsRow(totalServices = totalServices, nearbyServices = nearbyServices)
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Balance card con gradiente rojo
         RedEnhancedBalanceCard()
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -103,12 +103,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            // 🎭 BOTONES ANIMADOS - Aparecen uno por uno con delay
             RedAnimatedServiceCard(
                 icon = Icons.Default.Add,
                 text = "Agregar servicio",
                 iconColor = Color(0xFFDC2626),
-                delay = 0, // ← Sin delay, aparece primero
+                delay = 0,
                 onClick = {
                     navController.navigate(Screens.AddService.route)
                     Toast.makeText(context, "➕ Agregar nuevo servicio", Toast.LENGTH_SHORT).show()
@@ -116,10 +115,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
             )
 
             RedAnimatedServiceCard(
-                icon = Icons.Default.List,
+                icon = Icons.AutoMirrored.Filled.List, // ✅ CORREGIDO
                 text = "Ver servicios disponibles",
                 iconColor = Color(0xFF991B1B),
-                delay = 100, // ← 100ms después del anterior
+                delay = 100,
                 onClick = {
                     navController.navigate(Screens.ViewServicesWithMode.viewOnly())
                     Toast.makeText(context, "👁️ Solo visualización", Toast.LENGTH_SHORT).show()
@@ -130,7 +129,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                 icon = Icons.Default.Edit,
                 text = "Modificar servicio",
                 iconColor = Color(0xFFB91C1C),
-                delay = 200, // ← 200ms después del primero
+                delay = 200,
                 onClick = {
                     navController.navigate(Screens.ViewServicesWithMode.editOnly())
                     Toast.makeText(context, "✏️ Selecciona un servicio para modificarlo", Toast.LENGTH_SHORT).show()
@@ -141,14 +140,13 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                 icon = Icons.Default.Delete,
                 text = "Eliminar servicio",
                 iconColor = Color(0xFF7F1D1D),
-                delay = 300, // ← 300ms después del primero
+                delay = 300,
                 onClick = {
                     navController.navigate(Screens.ViewServicesWithMode.deleteOnly())
                     Toast.makeText(context, "🗑️ Selecciona un servicio para eliminarlo", Toast.LENGTH_SHORT).show()
                 }
             )
 
-            // Botón destacado para servicios cercanos
             RedFeaturedServiceCard(
                 icon = Icons.Default.LocationOn,
                 text = "Ver servicios cercanos",
@@ -198,24 +196,22 @@ fun RedModernHeader(currentTime: String, onLogoutClick: () -> Unit) {
                     onClick = onLogoutClick,
                     modifier = Modifier.background(Color.White.copy(alpha = 0.2f), CircleShape)
                 ) {
-                    Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión", tint = Color.White)
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión", tint = Color.White) // ✅ CORREGIDO
                 }
             }
         }
     }
 }
 
-// 🎭 EMOJI QUE SE MUEVE - Animación infinita que cambia el tamaño del emoji
 @Composable
 fun RedAnimatedGreetingCard() {
-    // ✨ ANIMACIÓN INFINITA - El emoji crece y decrece suavemente
     val infiniteTransition = rememberInfiniteTransition(label = "greeting")
     val animatedFloat by infiniteTransition.animateFloat(
-        initialValue = 0f,        // ← Valor inicial
-        targetValue = 1f,         // ← Valor final
+        initialValue = 0f,
+        targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000), // ← 3 segundos de duración
-            repeatMode = RepeatMode.Reverse // ← Va y viene (0→1→0→1...)
+            animation = tween(3000),
+            repeatMode = RepeatMode.Reverse
         ), label = "float"
     )
 
@@ -228,10 +224,9 @@ fun RedAnimatedGreetingCard() {
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 🚗 EMOJI ANIMADO - El tamaño cambia de 24sp a 28sp suavemente
             Text(
                 text = "🚗",
-                fontSize = (24 + animatedFloat * 4).sp // ← 24sp + (0-1) * 4sp = 24sp-28sp
+                fontSize = (24 + animatedFloat * 4).sp
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
@@ -320,7 +315,6 @@ fun RedEnhancedBalanceCard() {
     }
 }
 
-// 🎭 BOTONES ANIMADOS - Aparecen deslizándose desde la derecha uno por uno
 @Composable
 fun RedAnimatedServiceCard(
     icon: ImageVector,
@@ -329,22 +323,19 @@ fun RedAnimatedServiceCard(
     delay: Int,
     onClick: () -> Unit
 ) {
-
     var isVisible by remember { mutableStateOf(false) }
 
-    // 🚀 TRIGGER DE ANIMACIÓN - Se ejecuta cuando se crea el componente
     LaunchedEffect(Unit) {
-        delay(delay.toLong()) // ← Espera X milisegundos
-        isVisible = true      // ← Hace visible el botón (activa la animación)
+        delay(delay.toLong())
+        isVisible = true
     }
 
-    // ✨ ANIMACIÓN DE ENTRADA - Deslizamiento + desvanecimiento
     AnimatedVisibility(
         visible = isVisible,
         enter = slideInHorizontally(
-            initialOffsetX = { 300 }, // ← Comienza 300px a la derecha
-            animationSpec = tween(500) // ← Dura 500ms
-        ) + fadeIn(animationSpec = tween(500)) // ← También se desvanece gradualmente
+            initialOffsetX = { 300 },
+            animationSpec = tween(500)
+        ) + fadeIn(animationSpec = tween(500))
     ) {
         Card(
             modifier = Modifier
@@ -370,7 +361,7 @@ fun RedAnimatedServiceCard(
 
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(text, color = Color(0xFF2C3E50), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                Icon(Icons.Default.ArrowForward, contentDescription = "Ir", tint = iconColor, modifier = Modifier.size(20.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Ir", tint = iconColor, modifier = Modifier.size(20.dp)) // ✅ CORREGIDO
             }
         }
     }
@@ -409,7 +400,7 @@ fun RedFeaturedServiceCard(icon: ImageVector, text: String, subtitle: String, on
                     Text(subtitle, color = Color.White.copy(alpha = 0.9f), fontSize = 14.sp)
                 }
 
-                Icon(Icons.Default.ArrowForward, contentDescription = "Ir", tint = Color.White, modifier = Modifier.size(24.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Ir", tint = Color.White, modifier = Modifier.size(24.dp)) // ✅ CORREGIDO
             }
         }
     }

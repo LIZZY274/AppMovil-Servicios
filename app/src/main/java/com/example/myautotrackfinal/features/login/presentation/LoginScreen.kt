@@ -49,7 +49,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
     val errorMessage by loginViewModel.errorMessage.observeAsState()
     val isLoading by loginViewModel.isLoading.observeAsState(false)
 
-    // Observar el éxito del login
+
     LaunchedEffect(loginSuccess) {
         if (loginSuccess == true) {
             Toast.makeText(context, "✅ Bienvenido a AutoTrack", Toast.LENGTH_SHORT).show()
@@ -60,7 +60,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
         }
     }
 
-    // Observar mensajes de error
+
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             Toast.makeText(context, "❌ $it", Toast.LENGTH_LONG).show()
@@ -68,7 +68,6 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
         }
     }
 
-    // 🎨 FONDO CON GRADIENTE PROFESIONAL
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -91,12 +90,12 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 🚗 LOGO ANIMADO CON CARRO
+
             AnimatedCarLogo()
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 📧 CAMPO EMAIL PROFESIONAL
+
             ProfessionalTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -108,7 +107,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 🔒 CAMPO PASSWORD PROFESIONAL
+
             ProfessionalPasswordField(
                 value = password,
                 onValueChange = { password = it },
@@ -118,7 +117,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔗 FORGOT PASSWORD
+
             Text(
                 text = "¿Olvidaste tu contraseña?",
                 color = Color(0xFFDC2626),
@@ -131,7 +130,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 🔴 BOTÓN LOGIN PROFESIONAL
+
             ProfessionalLoginButton(
                 isLoading = isLoading,
                 onClick = {
@@ -145,7 +144,6 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 📝 REGISTRO
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {

@@ -1,4 +1,3 @@
-// features/nearby/presentation/NearbyServicesViewModel.kt
 package com.example.myautotrackfinal.features.nearby.presentation
 
 import androidx.lifecycle.ViewModel
@@ -35,13 +34,11 @@ class NearbyServicesViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
             try {
-                // Obtener ubicación actual
                 val currentLocation = locationRepository.getCurrentLocation()
 
                 if (currentLocation != null) {
                     _uiState.value = _uiState.value.copy(currentLocation = currentLocation)
 
-                    // Buscar servicios cercanos
                     val services = locationRepository.getNearbyServices(
                         latitude = currentLocation.first,
                         longitude = currentLocation.second,

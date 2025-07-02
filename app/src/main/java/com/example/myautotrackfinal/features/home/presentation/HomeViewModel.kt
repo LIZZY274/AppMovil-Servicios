@@ -6,9 +6,7 @@ import com.example.myautotrackfinal.core.di.AppModule
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-
     private val tokenManager = AppModule.provideTokenManager(application.applicationContext)
-    private val homeUseCase = AppModule.provideHomeUseCase()
 
     fun logout() {
         tokenManager.deleteToken()
