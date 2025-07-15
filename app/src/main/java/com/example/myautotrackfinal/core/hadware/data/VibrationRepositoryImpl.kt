@@ -22,3 +22,4 @@ class VibrationRepositoryImpl(
         vibrationManager.vibrateDelete()
     }
 }
+// 🔗 SOLO PASA LLAMADAS AL VibrationManager

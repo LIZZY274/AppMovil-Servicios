@@ -20,9 +20,7 @@ class AuthInterceptor(private val tokenManager: TokenManager) : Interceptor {
                 .header("Authorization", "Bearer $token")
                 .build()
 
-
             val response = chain.proceed(authenticatedRequest)
-
 
             if (response.code == 401) {
                 tokenManager.deleteToken()

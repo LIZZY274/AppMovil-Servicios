@@ -71,7 +71,7 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
         }
     }
 
-
+ //////// 4 Renderiza CameraScreen
     if (showCamera == true) {
         CameraScreen(
             onPhotoCaptured = { uri ->
@@ -305,7 +305,7 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Tomar nueva foto")
                         }
-                    } else {
+                    } else { //Usuario presiona "Tomar foto"
                         Button(
                             onClick = { addServiceViewModel.showCamera() },
                             modifier = Modifier.fillMaxWidth(),
@@ -349,7 +349,7 @@ fun AddServiceScreen(navController: NavController, addServiceViewModel: AddServi
                 }
             }
 
-            // MOSTRAR ESTADO DE LA IMAGEN
+            //
             if (capturedImageUri != null) {
                 Card(
                     modifier = Modifier

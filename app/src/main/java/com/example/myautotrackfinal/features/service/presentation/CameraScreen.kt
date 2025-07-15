@@ -32,19 +32,18 @@ fun CameraScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // 🔐 Permisos de cámara
+    // 5 CameraScreen solicita permisos
     val cameraPermissionState: PermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
     var isCameraInitialized by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // 📸 Preview view
     val previewView = remember {
         PreviewView(context).apply {
             scaleType = PreviewView.ScaleType.FILL_CENTER
         }
     }
-
+//6. Inicializa cámara automáticamente
     LaunchedEffect(cameraPermissionState.status.isGranted) {
         if (cameraPermissionState.status.isGranted) {
             cameraRepository.initializeCamera(
@@ -57,7 +56,7 @@ fun CameraScreen(
     }
 
     if (!cameraPermissionState.status.isGranted) {
-        // 🔐 Pantalla de permisos
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,15 +76,14 @@ fun CameraScreen(
             }
         }
     } else {
-        // 📸 Pantalla de cámara
+
         Box(modifier = Modifier.fillMaxSize()) {
-            // 📱 Vista previa de la cámara
+
             AndroidView(
                 factory = { previewView },
                 modifier = Modifier.fillMaxSize()
             )
 
-            // ⬅️ Botón de regreso
             IconButton(
                 onClick = onBackPressed,
                 modifier = Modifier
@@ -129,7 +127,7 @@ fun CameraScreen(
                 )
             }
 
-            // ⚠️ Mostrar errores
+
             errorMessage?.let { error ->
                 Card(
                     modifier = Modifier
@@ -147,3 +145,4 @@ fun CameraScreen(
         }
     }
 }
+

@@ -16,33 +16,29 @@ class UpdateServiceViewModel(application: Application) : AndroidViewModel(applic
 
     private val serviceUseCase = AppModule.provideServiceUseCase(application.applicationContext)
 
-    private val _service = MutableLiveData<Service>()
-    val service: LiveData<Service> = _service
+    private val _service = MutableLiveData<Service?>()
+    val service: LiveData<Service?> = _service
 
-    private val _updateSuccess = MutableLiveData<Boolean>()
-    val updateSuccess: LiveData<Boolean> = _updateSuccess
+    private val _updateSuccess = MutableLiveData<Boolean?>()
+    val updateSuccess: LiveData<Boolean?> = _updateSuccess
 
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String> = _errorMessage
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-
     private fun formatDateForServer(fecha: String): String {
         return try {
-
             if (fecha.contains("-") && fecha.length == 10) {
                 val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 val date = inputFormat.parse(fecha)
                 outputFormat.format(date ?: Date())
             } else {
-
                 fecha
             }
         } catch (e: Exception) {
-
             fecha
         }
     }
@@ -56,7 +52,45 @@ class UpdateServiceViewModel(application: Application) : AndroidViewModel(applic
 
                 if (response.isSuccessful) {
                     val singleServiceResponse = response.body()
-                    _service.value = singleServiceResponse?.data
+
+                    println("=== RESPUESTA DEL SERVIDOR ===")
+                    println("Response body: $singleServiceResponse")
+                    println("Response type: ${singleServiceResponse?.javaClass?.simpleName}")
+
+
+                    val serviceValue = singleServiceResponse?.let { resp ->
+
+                        try {
+                            val fields = resp.javaClass.declaredFields
+                            fields.forEach { field ->
+                                field.isAccessible = true
+                                val value = field.get(resp)
+                                println("Campo: ${field.name} = $value")
+                            }
+
+
+                            val serviceField = fields.find { field ->
+                                field.type == Service::class.java ||
+                                        field.name.equals("service", ignoreCase = true) ||
+                                        field.name.equals("data", ignoreCase = true) ||
+                                        field.name.equals("result", ignoreCase = true)
+                            }
+
+                            serviceField?.let { field ->
+                                field.isAccessible = true
+                                field.get(resp) as? Service
+                            }
+                        } catch (e: Exception) {
+                            println("Error en reflection: ${e.message}")
+                            null
+                        }
+                    }
+
+                    if (serviceValue != null) {
+                        _service.value = serviceValue
+                    } else {
+                        _errorMessage.value = "Error: No se encontró el servicio en la respuesta del servidor"
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _errorMessage.value = "Error al cargar servicio: $errorBody"
@@ -85,6 +119,7 @@ class UpdateServiceViewModel(application: Application) : AndroidViewModel(applic
 
                 if (currentService == null) {
                     _errorMessage.value = "Error: No se pudo cargar el servicio original"
+                    _isLoading.value = false
                     return@launch
                 }
 

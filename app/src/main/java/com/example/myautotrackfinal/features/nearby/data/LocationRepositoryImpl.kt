@@ -1,6 +1,5 @@
-// features/nearby/data/LocationRepositoryImpl.kt
 package com.example.myautotrackfinal.features.nearby.data
-
+//log
 import com.example.myautotrackfinal.features.nearby.domain.LocationRepository
 import com.example.myautotrackfinal.features.nearby.domain.model.ServiceLocation
 import kotlinx.coroutines.delay
@@ -9,7 +8,7 @@ import kotlin.math.*
 class LocationRepositoryImpl : LocationRepository {
 
     override suspend fun getCurrentLocation(): Pair<Double, Double>? {
-        // Simular obtener ubicación actual
+
         delay(1000)
         return Pair(16.6148, -93.0938)
     }

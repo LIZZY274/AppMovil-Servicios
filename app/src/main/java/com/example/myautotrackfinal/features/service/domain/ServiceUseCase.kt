@@ -1,31 +1,51 @@
 package com.example.myautotrackfinal.features.service.domain
 
+import com.example.myautotrackfinal.core.network.ServiceApi
+import com.example.myautotrackfinal.core.datastore.TokenManager
+import com.example.myautotrackfinal.features.service.data.model.Service
 import com.example.myautotrackfinal.features.service.data.model.ServiceRequest
-import com.example.myautotrackfinal.features.service.data.model.ServiceApiResponse
-import com.example.myautotrackfinal.features.service.data.model.SingleServiceApiResponse
-import com.example.myautotrackfinal.features.service.domain.repository.ServiceRepositoryInterface
 import retrofit2.Response
 
-class ServiceUseCase(private val repository: ServiceRepositoryInterface) {
 
+data class ServiceListResponse(
+    val services: List<Service>? = null,
+    val data: List<Service>? = null,
+    val results: List<Service>? = null
+)
 
-    suspend fun getAllServices(): Response<ServiceApiResponse> {
-        return repository.getAllServices()
+data class SingleServiceResponse(
+    val service: Service? = null,
+    val data: Service? = null,
+    val result: Service? = null
+)
+
+data class ServiceActionResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val data: Service? = null
+)
+
+class ServiceUseCase(
+    private val serviceRepository: com.example.myautotrackfinal.features.service.domain.repository.ServiceRepositoryInterface
+) {
+
+    suspend fun getAllServices(): Response<ServiceListResponse> {
+        return serviceRepository.getAllServices()
     }
 
-    suspend fun getServiceById(id: String): Response<SingleServiceApiResponse> {
-        return repository.getServiceById(id)
+    suspend fun getServiceById(id: String): Response<SingleServiceResponse> {
+        return serviceRepository.getServiceById(id)
     }
 
-    suspend fun createService(request: ServiceRequest): Response<Void> {
-        return repository.createService(request)
+    suspend fun addService(serviceRequest: ServiceRequest): Response<ServiceActionResponse> {
+        return serviceRepository.createService(serviceRequest)
     }
 
-    suspend fun updateService(id: String, request: ServiceRequest): Response<Void> {
-        return repository.updateService(id, request)
+    suspend fun updateService(id: String, serviceRequest: ServiceRequest): Response<ServiceActionResponse> {
+        return serviceRepository.updateService(id, serviceRequest)
     }
 
-    suspend fun deleteService(id: String): Response<Void> {
-        return repository.deleteService(id)
+    suspend fun deleteService(id: String): Response<ServiceActionResponse> {
+        return serviceRepository.deleteService(id)
     }
 }

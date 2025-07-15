@@ -38,16 +38,16 @@ fun MapComponent(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFE3F2FD), // Azul muy claro
-                        Color(0xFFF1F8E9)  // Verde muy claro
+                        Color(0xFFE3F2FD),
+                        Color(0xFFF1F8E9)
                     )
                 )
             )
     ) {
-        // MAPA SIMPLE
+        //
         SimpleMapBackground()
 
-        // MARCADORES DE SERVICIOS
+
         services.forEachIndexed { index, service ->
             val position = calculateSimplePosition(index, services.size)
             BeautifulServiceMarker(
@@ -58,14 +58,13 @@ fun MapComponent(
         }
 
 
-        // 🎛️ CONTROLES SIMPLES
+
         SimpleMapControls(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
         )
 
-        // 📊 INFO PANEL
         SimpleInfoPanel(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -81,7 +80,7 @@ fun SimpleMapBackground() {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Carretera principal
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -160,7 +159,7 @@ fun BeautifulServiceMarker(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Círculo del marcador
+
         Box(
             modifier = Modifier
                 .size(45.dp)
@@ -176,7 +175,7 @@ fun BeautifulServiceMarker(
             )
         }
 
-        // Nombre del servicio
+
         Spacer(modifier = Modifier.height(4.dp))
         Card(
             colors = CardDefaults.cardColors(
@@ -195,7 +194,7 @@ fun BeautifulServiceMarker(
             )
         }
 
-        // Distancia
+
         service.distance?.let { distance ->
             Text(
                 text = "${String.format("%.1f", distance)}km",
@@ -208,7 +207,7 @@ fun BeautifulServiceMarker(
     }
 }
 
-// 🎛️ CONTROLES SIMPLES
+
 @Composable
 fun SimpleMapControls(
     modifier: Modifier = Modifier
@@ -225,7 +224,7 @@ fun SimpleMapControls(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Zoom +
+
             Button(
                 onClick = { /* Zoom in */ },
                 modifier = Modifier.size(40.dp),
@@ -238,7 +237,7 @@ fun SimpleMapControls(
                 Text("+", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
             }
 
-            // Zoom -
+
             Button(
                 onClick = { /* Zoom out */ },
                 modifier = Modifier.size(40.dp),
@@ -251,7 +250,6 @@ fun SimpleMapControls(
                 Text("−", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
             }
 
-            // Mi ubicación
             Button(
                 onClick = { /* Centrar */ },
                 modifier = Modifier.size(40.dp),
@@ -272,7 +270,6 @@ fun SimpleMapControls(
     }
 }
 
-// 📊 PANEL DE INFO SIMPLE
 @Composable
 fun SimpleInfoPanel(
     modifier: Modifier = Modifier,
@@ -325,7 +322,6 @@ fun SimpleInfoPanel(
     }
 }
 
-// 🎯 POSICIÓN SIMPLE Y DISTRIBUIDA
 private fun calculateSimplePosition(index: Int, total: Int): Pair<Float, Float> {
     val centerX = 200f
     val centerY = 200f

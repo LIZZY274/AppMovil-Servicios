@@ -1,25 +1,41 @@
 package com.example.myautotrackfinal.core.network
 
 import com.example.myautotrackfinal.features.service.data.model.ServiceRequest
-import com.example.myautotrackfinal.features.service.data.model.ServiceApiResponse
-import com.example.myautotrackfinal.features.service.data.model.SingleServiceApiResponse
+import com.example.myautotrackfinal.features.service.domain.ServiceListResponse
+import com.example.myautotrackfinal.features.service.domain.SingleServiceResponse
+import com.example.myautotrackfinal.features.service.domain.ServiceActionResponse
 import retrofit2.Response
 import retrofit2.http.*
 
 interface ServiceApi {
 
-    @GET("api/services")
-    suspend fun getAllServices(): Response<ServiceApiResponse>
+    @GET("services")
+    suspend fun getServices(
+        @Header("Authorization") token: String
+    ): Response<ServiceListResponse>
 
-    @GET("api/services/{id}")
-    suspend fun getServiceById(@Path("id") id: String): Response<SingleServiceApiResponse>
+    @GET("services/{id}")
+    suspend fun getServiceById(
+        @Header("Authorization") token: String,
+        @Path("id") id: String
+    ): Response<SingleServiceResponse>
 
-    @POST("api/services")
-    suspend fun createService(@Body request: ServiceRequest): Response<Void>
+    @POST("services")
+    suspend fun createService(
+        @Header("Authorization") token: String,
+        @Body serviceRequest: ServiceRequest
+    ): Response<ServiceActionResponse>
 
-    @PUT("api/services/{id}")
-    suspend fun updateService(@Path("id") id: String, @Body request: ServiceRequest): Response<Void>
+    @PUT("services/{id}")
+    suspend fun updateService(
+        @Header("Authorization") token: String,
+        @Path("id") id: String,
+        @Body serviceRequest: ServiceRequest
+    ): Response<ServiceActionResponse>
 
-    @DELETE("api/services/{id}")
-    suspend fun deleteService(@Path("id") id: String): Response<Void>
+    @DELETE("services/{id}")
+    suspend fun deleteService(
+        @Header("Authorization") token: String,
+        @Path("id") id: String
+    ): Response<ServiceActionResponse>
 }

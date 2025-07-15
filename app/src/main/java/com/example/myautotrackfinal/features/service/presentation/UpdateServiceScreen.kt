@@ -49,7 +49,6 @@ fun UpdateServiceScreen(navController: NavController, serviceId: String, updateS
     var taller by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
 
-    // Variables para rastrear los valores originales
     var originalTipo by remember { mutableStateOf("") }
     var originalFecha by remember { mutableStateOf("") }
     var originalCosto by remember { mutableStateOf("") }

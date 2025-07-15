@@ -31,7 +31,7 @@ class VibrationManager(private val context: Context) {
         vibrateWithPattern(pattern)
     }
 
-    // ✅ CORREGIDO: Ahora es PÚBLICO
+
     fun hasVibrator(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.hasVibrator()
@@ -53,7 +53,7 @@ class VibrationManager(private val context: Context) {
                 vibrator.vibrate(duration)
             }
         } catch (e: Exception) {
-            // Silencioso - no es crítico si falla
+
         }
     }
 
@@ -69,7 +69,7 @@ class VibrationManager(private val context: Context) {
                 vibrator.vibrate(pattern, -1)
             }
         } catch (e: Exception) {
-            // Silencioso - no es crítico si falla
+
         }
     }
 }

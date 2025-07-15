@@ -2,33 +2,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-
+    <!-- Permisos de red -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
-    <!-- 📍 PERMISOS DE UBICACIÓN (NUEVOS) -->
-
+    <!-- Permisos de ubicación -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- Ubicación aproximada (torres de celular/WiFi) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- Ubicación en segundo plano (opcional para futuras features) -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-
-    <!-- 📷 PERMISOS PARA CÁMARA -->
-
+    <!-- Permisos de cámara -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-
+    <!-- Permiso de llamadas -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
-
+    <!-- Permiso de vibración -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-
+    <!-- Características de hardware -->
     <uses-feature
         android:name="android.hardware.location"
         android:required="false" />
@@ -40,6 +34,7 @@
         android:required="false" />
 
     <application
+        android:name=".AutoTrackApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -72,8 +67,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-
 
     </application>
 

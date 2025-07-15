@@ -1,4 +1,3 @@
-// features/nearby/presentation/NearbyServicesScreen.kt
 package com.example.myautotrackfinal.features.nearby.presentation
 
 import androidx.compose.foundation.background
@@ -43,7 +42,7 @@ fun NearbyServicesScreen(
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        // TopBar
+
         TopAppBar(
             title = {
                 Text(
@@ -67,7 +66,7 @@ fun NearbyServicesScreen(
             )
         )
 
-        // Subtitle debajo del TopBar
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -369,7 +368,7 @@ fun ServiceDetailsBottomSheet(
                 )
             }
 
-            // Descripción
+
             service.description?.let { description ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -381,7 +380,6 @@ fun ServiceDetailsBottomSheet(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Botones de acción
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -423,7 +421,7 @@ fun ServiceDetailsBottomSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Botón cerrar
+
             TextButton(
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth()

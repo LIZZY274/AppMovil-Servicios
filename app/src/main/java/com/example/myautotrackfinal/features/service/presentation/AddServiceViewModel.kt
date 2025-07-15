@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.myautotrackfinal.core.di.AppModule
 import com.example.myautotrackfinal.core.hardware.domain.CameraRepository
+import com.example.myautotrackfinal.domain.model.ServiceOffline
 import com.example.myautotrackfinal.features.service.data.model.ServiceRequest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -17,6 +18,12 @@ class AddServiceViewModel(application: Application) : AndroidViewModel(applicati
 
     private val serviceUseCase = AppModule.provideServiceUseCase(application.applicationContext)
     private val cameraRepository = AppModule.provideCameraRepository(application.applicationContext)
+
+
+    private val saveServiceOfflineUseCase = AppModule.provideSaveServiceOfflineUseCase(application)
+    private val offlineAuthRepository = AppModule.provideOfflineAuthRepository(application)
+    private val connectivityUtil = AppModule.provideConnectivityUtil(application)
+
 
     private val _addServiceSuccess = MutableLiveData<Boolean>()
     val addServiceSuccess: LiveData<Boolean> = _addServiceSuccess
@@ -32,6 +39,7 @@ class AddServiceViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _capturedImageUri = MutableLiveData<Uri?>()
     val capturedImageUri: LiveData<Uri?> = _capturedImageUri
+
 
     fun getCameraRepository(): CameraRepository = cameraRepository
 
@@ -51,7 +59,6 @@ class AddServiceViewModel(application: Application) : AndroidViewModel(applicati
         _capturedImageUri.value = null
     }
 
-
     private fun formatDateForServer(fecha: String): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -59,43 +66,106 @@ class AddServiceViewModel(application: Application) : AndroidViewModel(applicati
             val date = inputFormat.parse(fecha)
             outputFormat.format(date ?: Date())
         } catch (e: Exception) {
-
             fecha
         }
     }
 
+    // === MÉTODO PRINCIPAL MEJORADO ===
     fun addService(tipo: String, fecha: String, costo: Double, taller: String, descripcion: String) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
 
+                val currentUser = offlineAuthRepository.getCurrentUser()
+                if (currentUser == null) {
+                    _errorMessage.value = "Error: Usuario no encontrado. Inicia sesión nuevamente."
+                    return@launch
+                }
+
                 val imagenUrl = _capturedImageUri.value?.toString()
-
-
                 val fechaFormateada = formatDateForServer(fecha)
 
-                val request = ServiceRequest(
-                    tipo = tipo,
-                    fecha = fechaFormateada,
-                    costo = costo,
-                    taller = taller,
-                    descripcion = descripcion,
-                    imagenUrl = imagenUrl
-                )
+                if (connectivityUtil.isInternetAvailable()) {
 
-                val response = serviceUseCase.createService(request)
+                    try {
+                        val request = ServiceRequest(
+                            tipo = tipo,
+                            fecha = fechaFormateada,
+                            costo = costo,
+                            taller = taller,
+                            descripcion = descripcion,
+                            imagenUrl = imagenUrl
+                        )
 
-                if (response.isSuccessful) {
-                    _addServiceSuccess.value = true
+                        val response = serviceUseCase.addService(request)
+
+                        if (response.isSuccessful) {
+
+                            val serviceOffline = ServiceOffline(
+                                tipo = tipo,
+                                fecha = fechaFormateada,
+                                costo = costo,
+                                taller = taller,
+                                descripcion = descripcion,
+                                imagenUrl = imagenUrl,
+                                userId = currentUser.id,
+                                isSynced = true,
+                                needsSync = false
+                            )
+                            saveServiceOfflineUseCase(serviceOffline)
+                            _addServiceSuccess.value = true
+                        } else {
+
+                            saveServiceOfflineAndNotify(
+                                tipo, fechaFormateada, costo, taller, descripcion, imagenUrl, currentUser.id
+                            )
+                        }
+                    } catch (e: Exception) {
+
+                        saveServiceOfflineAndNotify(
+                            tipo, fechaFormateada, costo, taller, descripcion, imagenUrl, currentUser.id
+                        )
+                    }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    _errorMessage.value = "Error al crear servicio: $errorBody"
+
+                    saveServiceOfflineAndNotify(
+                        tipo, fechaFormateada, costo, taller, descripcion, imagenUrl, currentUser.id
+                    )
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "Error de conexión: ${e.message}"
+                _errorMessage.value = "Error inesperado: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    private suspend fun saveServiceOfflineAndNotify(
+        tipo: String,
+        fecha: String,
+        costo: Double,
+        taller: String,
+        descripcion: String,
+        imagenUrl: String?,
+        userId: String
+    ) {
+        val serviceOffline = ServiceOffline(
+            tipo = tipo,
+            fecha = fecha,
+            costo = costo,
+            taller = taller,
+            descripcion = descripcion,
+            imagenUrl = imagenUrl,
+            userId = userId,
+            isSynced = false,
+            needsSync = true
+        )
+
+        val result = saveServiceOfflineUseCase(serviceOffline)
+        if (result.isSuccess) {
+            _addServiceSuccess.value = true
+        } else {
+            _errorMessage.value = "Error al guardar: ${result.exceptionOrNull()?.message}"
         }
     }
 

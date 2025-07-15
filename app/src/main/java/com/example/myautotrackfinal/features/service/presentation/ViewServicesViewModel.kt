@@ -51,7 +51,7 @@ class ViewServicesViewModel(application: Application) : AndroidViewModel(applica
             }
         }
     }
-
+///////////
     fun deleteService(serviceId: String) {
         viewModelScope.launch {
             try {

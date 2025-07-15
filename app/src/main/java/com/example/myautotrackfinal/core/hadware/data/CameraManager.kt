@@ -15,6 +15,7 @@ class CameraManager(private val context: Context) {
     private var imageCapture: ImageCapture? = null
     private var cameraProvider: ProcessCameraProvider? = null
 
+
     fun initializeCamera(
         lifecycleOwner: LifecycleOwner,
         previewView: androidx.camera.view.PreviewView,
@@ -27,19 +28,18 @@ class CameraManager(private val context: Context) {
             try {
                 cameraProvider = cameraProviderFuture.get()
 
-                // ver
+
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-                // tomar
+
                 imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
 
-                //  Cámara trasera por defecto
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                 cameraProvider?.unbindAll()
                 cameraProvider?.bindToLifecycle(
@@ -50,29 +50,31 @@ class CameraManager(private val context: Context) {
                 )
 
                 onSuccess()
-
             } catch (e: Exception) {
                 onError(e)
             }
         }, ContextCompat.getMainExecutor(context))
     }
 
+    //
     fun capturePhoto(
         onPhotoSaved: (Uri) -> Unit,
         onError: (Exception) -> Unit
     ) {
         val imageCapture = this.imageCapture ?: return
 
-        //  Crear archivo para la imagen
+        //
         val photoFile = createImageFile()
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
+        //
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    //  Url
                     val savedUri = Uri.fromFile(photoFile)
                     onPhotoSaved(savedUri)
                 }
@@ -84,14 +86,18 @@ class CameraManager(private val context: Context) {
         )
     }
 
+    //
     private fun createImageFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val imageFileName = "service_$timeStamp.jpg"
+
+
         val storageDir = File(context.getExternalFilesDir(null), "service_photos")
 
         if (!storageDir.exists()) {
             storageDir.mkdirs()
         }
+
 
         return File(storageDir, imageFileName)
     }

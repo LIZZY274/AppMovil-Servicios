@@ -31,9 +31,9 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // ============================================
-        // 🔐 AUTENTICACIÓN
-        // ============================================
+
+        //  AUTENTICACIÓN
+
         composable(Screens.Login.route) {
             LoginScreen(navController = navController)
         }
@@ -42,23 +42,17 @@ fun AppNavHost(
             RegisterScreen(navController = navController)
         }
 
-        // ============================================
-        // 🏠 PANTALLA PRINCIPAL
-        // ============================================
         composable(Screens.Home.route) {
             HomeScreen(navController = navController)
         }
 
-        // ============================================
-        // ⚙️ GESTIÓN DE SERVICIOS
-        // ============================================
+        //  GESTIÓN DE SERVICIOS
 
         // Agregar nuevo servicio
         composable(Screens.AddService.route) {
             AddServiceScreen(navController = navController)
         }
 
-        // Ver servicios (modo básico - MANTENER PARA COMPATIBILIDAD)
         composable(Screens.ViewServices.route) {
             ViewServicesScreen(
                 navController = navController,
@@ -66,7 +60,7 @@ fun AppNavHost(
             )
         }
 
-        // Ver servicios con modo específico (IMPLEMENTACIÓN MEJORADA)
+        // Ver servicios
         composable(
             route = Screens.ViewServicesWithMode.route,
             arguments = listOf(
@@ -106,14 +100,11 @@ fun AppNavHost(
                     serviceId = serviceId
                 )
             } else {
-                // Si no hay serviceId, volver atrás
                 navController.popBackStack()
             }
         }
 
-        // ============================================
-        // 📍 NUEVA FUNCIONALIDAD: SERVICIOS CERCANOS
-        // ============================================
+        // Servicios cercanos
         composable(Screens.NearbyServices.route) {
             NearbyServicesScreen(navController = navController)
         }
